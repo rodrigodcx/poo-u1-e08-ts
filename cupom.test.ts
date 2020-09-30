@@ -1,13 +1,10 @@
-const cupom_dados_loja_param = require('./cupom');
+import { dados_loja_objeto } from './cupom';
+import { Loja } from './loja';
 
-function verificaCampoObrigatorio(mensagemEsperada: string, nome_loja: string,
-  logradouro: string, numero: number, complemento: string, bairro: string,
-  municipio: string, estado: string, cep: string, telefone: string,
-  observacao: string, cnpj: string, inscricao_estadual: string) {
+
+function verificaCampoObrigatorio(mensagemEsperada: string, loja: Loja) {
   try {
-    cupom_dados_loja_param(mensagemEsperada, logradouro, numero, complemento,
-      bairro, municipio, estado, cep, telefone, observacao, cnpj,
-      inscricao_estadual);
+    dados_loja_objeto(loja);
   } catch (e) {
     expect(e.message).toBe(mensagemEsperada);
   }
@@ -90,83 +87,135 @@ CNPJ: 11.111.111/1111-11
 IE: 123456789
 `;
 
+const TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO: string = `Loja 1
+Log 1, s/n
+Bai 1 - Mun 1 - E1
+CEP:11111-111 Tel (11) 1111-1111
+Obs 1
+CNPJ: 11.111.111/1111-11
+IE: 123456789`
+
+const TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO: string = `Loja 1
+Log 1, s/n
+Mun 1 - E1
+CEP:11111-111 Tel (11) 1111-1111
+Obs 1
+CNPJ: 11.111.111/1111-11
+IE: 123456789`
+
+
 test('Loja Completa', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO,
-    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, 
-    INSCRICAO_ESTADUAL)).toBe(TEXTO_ESPERADO_LOJA_COMPLETA);
+  let lojaCompleta: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO,
+    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(lojaCompleta)).toBe(TEXTO_ESPERADO_LOJA_COMPLETA);
 });
 
 test('Nome vazio', () => {
-  verificaCampoObrigatorio(`O campo nome da loja é obrigatório`, "", 
-    LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE,
-    OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL);
+  let nomeVazio: Loja = new Loja("", LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO,
+    MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL);
+  verificaCampoObrigatorio(`O campo nome da loja é obrigatório`, nomeVazio);
 });
 
 test('Logradouro vazio', () => {
-  verificaCampoObrigatorio(`O campo logradouro do endereço é obrigatório`, 
-    NOME_LOJA, "", NUMERO, COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP,
-    TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL);
+  let logradouroVazio: Loja = new Loja(NOME_LOJA, "", NUMERO, COMPLEMENTO, 
+    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  verificaCampoObrigatorio(`O campo logradouro do endereço é obrigatório`,
+    logradouroVazio);
 });
 
 test('Número zero', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, 0, COMPLEMENTO, BAIRRO,
-    MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL))
-    .toBe(TEXTO_ESPERADO_SEM_NUMERO, );
+  let numeroZero: Loja = new Loja(NOME_LOJA, LOGRADOURO, 0, COMPLEMENTO, 
+    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(numeroZero)).toBe(TEXTO_ESPERADO_SEM_NUMERO);
 });
 
 test('Complemento vazio', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, NUMERO, "", BAIRRO,
-    MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL))
+  let complementoVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO, "", 
+    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, 
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(complementoVazio))
     .toBe(TEXTO_ESPERADO_SEM_COMPLEMENTO);
 });
 
 test('Bairro vazio', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, "",
-    MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL))
-    .toBe(TEXTO_ESPERADO_SEM_BAIRRO);
+  let bairroVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO,
+    "", MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, 
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(bairroVazio)).toBe(TEXTO_ESPERADO_SEM_BAIRRO);
 });
 
 test('Município vazio', () => {
+  let municipioVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, "", ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
   verificaCampoObrigatorio(`O campo município do endereço é obrigatório`, 
-    NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO, "", ESTADO, CEP,
-    TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL);
+    municipioVazio);
 });
 
 test('Estado vazio', () => {
-  verificaCampoObrigatorio(`O campo estado do endereço é obrigatório`,
-    NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO,MUNICIPIO, "", CEP,
-    TELEFONE, OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL);
+  let estadoVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, MUNICIPIO, "", CEP, TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  verificaCampoObrigatorio(`O campo estado do endereço é obrigatório`, 
+    estadoVazio);
 });
 
 test('CEP vazio', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, 
-    BAIRRO, MUNICIPIO, ESTADO, "", TELEFONE, OBSERVACAO, CNPJ, 
-    INSCRICAO_ESTADUAL)).toBe(TEXTO_ESPERADO_SEM_CEP);
+  let cepVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, "", TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(cepVazio)).toBe(TEXTO_ESPERADO_SEM_CEP);
 });
 
 test('Telefone vazio', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, 
-    BAIRRO, MUNICIPIO, ESTADO, CEP, "", OBSERVACAO, CNPJ, INSCRICAO_ESTADUAL))
-    .toBe(TEXTO_ESPERADO_SEM_TELEFONE);
+  let telefoneVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP, "", OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(telefoneVazio)).toBe(TEXTO_ESPERADO_SEM_TELEFONE);
 });
 
 test('Observação vazia', () => {
-  expect(cupom_dados_loja_param(NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, 
-    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, "", CNPJ, INSCRICAO_ESTADUAL))
+  let observacaoVazia: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, "", CNPJ,
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(observacaoVazia))
     .toBe(TEXTO_ESPERADO_SEM_OBSERVACAO);
 });
 
 test('CNPJ vazio', () => {
-  verificaCampoObrigatorio(`O campo CNPJ da loja é obrigatório`, NOME_LOJA,
-    LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, 
-    OBSERVACAO, "", INSCRICAO_ESTADUAL);
+  let cnpjVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, "",
+    INSCRICAO_ESTADUAL);
+  verificaCampoObrigatorio(`O campo CNPJ da loja é obrigatório`, cnpjVazio);
 });
 
 test('Inscrição estadual vazia', () => {
+  let ieVazia: Loja = new Loja(NOME_LOJA, LOGRADOURO, NUMERO,
+    COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, 
+    "");
   verificaCampoObrigatorio(`O campo inscrição estadual da loja é obrigatório`,
-    NOME_LOJA, LOGRADOURO, NUMERO, COMPLEMENTO, BAIRRO, MUNICIPIO, ESTADO, CEP,
-    TELEFONE, OBSERVACAO, CNPJ, "");
+    ieVazia);
 });
+
+test('Número zero e complemento vazio', () => {
+  let numeroZeroComplementoVazio: Loja = new Loja(NOME_LOJA, LOGRADOURO, 0, "",
+    BAIRRO, MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ, 
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(numeroZeroComplementoVazio))
+    .toBe(TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO);
+});
+
+test('Número zero, complemento e bairro vazios', () => {
+  let numeroZeroComplementoVazioBairroVazio: Loja = new Loja(NOME_LOJA, 
+    LOGRADOURO, 0, "", "", MUNICIPIO, ESTADO, CEP, TELEFONE, OBSERVACAO, CNPJ,
+    INSCRICAO_ESTADUAL);
+  expect(dados_loja_objeto(numeroZeroComplementoVazioBairroVazio))
+    .toBe(TEXTO_ESPERADO_SEM_NUMERO_SEM_COMPLEMENTO_SEM_BAIRRO);
+});
+
 
 test('Exercício 2 - customizado', () => {
 
@@ -184,10 +233,12 @@ test('Exercício 2 - customizado', () => {
   let cnpj = "";
   let inscricao_estadual = "";
 
+  let loja_customizada: Loja = new Loja(nome_loja, logradouro, numero,
+    complemento, bairro, municipio, estado, cep, telefone, observacao, cnpj,
+    inscricao_estadual);
+
   //E atualize o texto esperado abaixo
-  expect(cupom_dados_loja_param(nome_loja, logradouro, numero, complemento,
-    bairro, municipio, estado, cep, telefone, observacao, cnpj, 
-    inscricao_estadual)).toBe(
-    `
+  expect(dados_loja_objeto(loja_customizada)).toBe(
+      `
 `);
 });
